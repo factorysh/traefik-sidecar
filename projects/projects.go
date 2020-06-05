@@ -49,6 +49,9 @@ func (p *Projects) Project(b *traefik.Backend) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if len(cs) == 0 {
+			return "", nil
+		}
 		if len(cs) > 1 {
 			return "", errors.New("Oups, not unique container : " + n)
 		}

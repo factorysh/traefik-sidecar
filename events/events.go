@@ -16,6 +16,7 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	_projects "github.com/factorysh/traefik-sidecar/projects"
+	"github.com/factorysh/traefik-sidecar/traefik"
 	"github.com/yazgazan/jaydiff/diff"
 )
 
@@ -80,12 +81,20 @@ func (c *Client) WatchBackends() {
 		ck := crc64.Checksum(bodyText, table)
 		if len(c.currentState) == 0 {
 			fmt.Println("prems")
-			var current Backends
+			var current traefik.Backends
 			err = json.Unmarshal(bodyText, &current)
 			if err != nil {
 				log.Error(err)
 			}
 			spew.Dump(current)
+			for name, backend := range current {
+				p, err := c.projects.Project(backend)
+				if err != nil {
+					log.Error(err)
+				} else {
+					fmt.Println(name, p)
+				}
+			}
 			fmt.Println(string(bodyText))
 			c.currentState = bodyText
 			c.lock.Done()

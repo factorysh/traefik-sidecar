@@ -6,7 +6,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/docker v1.13.1
 	github.com/evanphx/json-patch v4.5.0+incompatible
-	github.com/factorysh/docker-visitor v0.1.2
+	github.com/factorysh/docker-visitor v0.1.3
 	github.com/factorysh/pubsub v0.2.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

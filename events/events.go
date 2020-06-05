@@ -10,10 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/factorysh/pubsub/event"
 	log "github.com/sirupsen/logrus"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	_projects "github.com/factorysh/traefik-sidecar/projects"
 	"github.com/yazgazan/jaydiff/diff"
 )
 
@@ -24,19 +26,21 @@ type Client struct {
 	Events       *event.Events
 	currentState []byte
 	lock         sync.WaitGroup
+	projects     *_projects.Projects
 }
 
-func New(address, username, password string) (*Client, error) {
+func New(address, username, password string, projects *_projects.Projects) (*Client, error) {
 	req, err := http.NewRequest("GET", address, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBasicAuth(username, password)
 	c := &Client{
-		address: address,
-		req:     req,
-		client:  &http.Client{},
-		Events:  event.NewEvents(),
+		address:  address,
+		req:      req,
+		client:   &http.Client{},
+		Events:   event.NewEvents(),
+		projects: projects,
 	}
 	c.lock.Add(1)
 	c.Events.SetPrems(func(ctx context.Context) *event.Event {
@@ -76,6 +80,12 @@ func (c *Client) WatchBackends() {
 		ck := crc64.Checksum(bodyText, table)
 		if len(c.currentState) == 0 {
 			fmt.Println("prems")
+			var current Backends
+			err = json.Unmarshal(bodyText, &current)
+			if err != nil {
+				log.Error(err)
+			}
+			spew.Dump(current)
 			fmt.Println(string(bodyText))
 			c.currentState = bodyText
 			c.lock.Done()
@@ -108,6 +118,6 @@ func (c *Client) WatchBackends() {
 			}
 		}
 		ckOld = ck
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }

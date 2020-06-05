@@ -44,9 +44,7 @@ func New(address, username, password string, projects *_projects.Projects) (*Cli
 	}
 	c.lock.Add(1)
 	c.Events.SetPrems(func(ctx context.Context) *event.Event {
-		fmt.Println("waiting")
 		c.lock.Wait()
-		fmt.Println("prems")
 		return &event.Event{
 			Id:    "0",
 			Data:  string(c.currentState),
@@ -91,6 +89,7 @@ func (c *Client) WatchBackends() {
 					log.Error(err)
 				} else {
 					l = l.WithField(name, p)
+					log.Info("Server ", name, "project", p)
 				}
 			}
 			l.Info("Initial state")

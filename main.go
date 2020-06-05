@@ -10,10 +10,14 @@ import (
 	"github.com/factorysh/traefik-sidecar/events"
 	"github.com/factorysh/traefik-sidecar/projects"
 	"github.com/factorysh/traefik-sidecar/web"
+	"github.com/onrik/logrus/filename"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	filenameHook := filename.NewHook()
+	log.AddHook(filenameHook)
+	log.SetLevel(log.DebugLevel)
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)

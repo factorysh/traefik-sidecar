@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/factorysh/pubsub/event"
 	log "github.com/sirupsen/logrus"
 
@@ -80,22 +79,21 @@ func (c *Client) WatchBackends() {
 		}
 		ck := crc64.Checksum(bodyText, table)
 		if len(c.currentState) == 0 {
-			fmt.Println("prems")
 			var current traefik.Backends
 			err = json.Unmarshal(bodyText, &current)
 			if err != nil {
 				log.Error(err)
 			}
-			spew.Dump(current)
+			l := log.WithField("ck", ck)
 			for name, backend := range current {
 				p, err := c.projects.Project(backend)
 				if err != nil {
 					log.Error(err)
 				} else {
-					fmt.Println(name, p)
+					l = l.WithField(name, p)
 				}
 			}
-			fmt.Println(string(bodyText))
+			l.Info("Initial state")
 			c.currentState = bodyText
 			c.lock.Done()
 		} else {

@@ -23,6 +23,7 @@ func New(watcher *visitor.Watcher) *Projects {
 
 var normalized = regexp.MustCompile(`[^a-zA-Z0-9]`)
 
+// NormalizeName normalizes name, just like traefik does.
 func NormalizeName(name string) string {
 	return normalized.ReplaceAllString(name, "-")
 }
@@ -35,6 +36,7 @@ func (p *Projects) projectOfContainer(id string) (string, error) {
 	return c.Config.Labels["com.docker.compose.project"], nil
 }
 
+// Project of a backend
 func (p *Projects) Project(b *traefik.Backend) (string, error) {
 	for server := range b.Servers {
 		fmt.Println(server)

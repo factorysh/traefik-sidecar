@@ -1,4 +1,4 @@
-package events
+package traefik
 
 import (
 	"encoding/json"

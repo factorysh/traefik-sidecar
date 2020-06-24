@@ -19,6 +19,7 @@ import (
 	"github.com/yazgazan/jaydiff/diff"
 )
 
+// Client for traefik API
 type Client struct {
 	req          *http.Request
 	address      string
@@ -29,6 +30,7 @@ type Client struct {
 	projects     *_projects.Projects
 }
 
+// New Client
 func New(address, username, password string, projects *_projects.Projects) (*Client, error) {
 	req, err := http.NewRequest("GET", address, nil)
 	if err != nil {

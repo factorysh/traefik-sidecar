@@ -56,10 +56,14 @@ func New(address, username, password string, projects *_projects.Projects) (*Cli
 	return c, nil
 }
 
+// Wait for getting initial traefik state
 func (c *Client) Wait() {
 	c.lock.Wait()
 }
 
+// WatchBackends watch traefik's backends
+// It's polling : forever loop + wait
+// Events are diff between current and last state.
 func (c *Client) WatchBackends() {
 	table := crc64.MakeTable(42)
 	c.req.URL.Path = "/api/providers/docker/backends"

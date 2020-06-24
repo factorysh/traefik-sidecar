@@ -25,7 +25,13 @@ func main() {
 	w := visitor.New(docker)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go w.Start(ctx)
+	go func() {
+		err := w.Start(ctx)
+		if err != nil {
+			log.WithError(err).Error()
+		}
+	}()
+
 	log.Info("Listen docker events")
 	p := projects.New(w)
 	c, err := events.New("http://localhost:8080", "admin", os.Getenv("PASSWORD"), p)
@@ -38,6 +44,9 @@ func main() {
 	go c.WatchBackends()
 	log.Info("watch traefik's backends")
 	log.Info("Listening HTTP")
-	http.ListenAndServe(":3000", mux)
+	err = http.ListenAndServe(":3000", mux)
+	if err != nil {
+		log.WithError(err).Error()
+	}
 
 }

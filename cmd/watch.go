@@ -8,6 +8,7 @@ import (
 	"github.com/factorysh/docker-visitor/visitor"
 	"github.com/factorysh/traefik-sidecar/events"
 	"github.com/factorysh/traefik-sidecar/projects"
+	"github.com/factorysh/traefik-sidecar/story"
 	"github.com/factorysh/traefik-sidecar/web"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -17,6 +18,7 @@ var (
 	traefikHost     string
 	traefikPassword string
 	eventsHost      string
+	storyPath       string
 )
 
 func init() {
@@ -24,6 +26,8 @@ func init() {
 	watchCmd.PersistentFlags().StringVarP(&traefikHost, "traefik", "t", "http://localhost:8080", "Træfik admin url")
 	watchCmd.PersistentFlags().StringVarP(&traefikPassword, "password", "p", "", "Træfik admin password")
 	watchCmd.PersistentFlags().StringVarP(&eventsHost, "events", "e", "localhost:3000", "Events SSE endpoint")
+	watchCmd.PersistentFlags().StringVarP(&storyPath, "story", "s", "", "Log backend story to a log path")
+
 }
 
 var watchCmd = &cobra.Command{
@@ -53,6 +57,19 @@ func watch(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	if storyPath != "" {
+		s := story.New(c.Events, storyPath)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go func() {
+			err := s.Listen(ctx)
+			if err != nil {
+				log.WithError(err).Error()
+			}
+		}()
+	}
+
 	mux := http.NewServeMux()
 	ctx2 := context.Background()
 	mux.Handle("/events", web.New(ctx2, c.Events))

@@ -12,7 +12,9 @@ import (
 	"github.com/factorysh/traefik-sidecar/events"
 	"github.com/factorysh/traefik-sidecar/projects"
 	"github.com/factorysh/traefik-sidecar/story"
+	"github.com/factorysh/traefik-sidecar/version"
 	"github.com/factorysh/traefik-sidecar/web"
+	"github.com/onrik/logrus/sentry"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +32,6 @@ func init() {
 	watchCmd.PersistentFlags().StringVarP(&traefikPassword, "password", "p", "", "Træfik admin password")
 	watchCmd.PersistentFlags().StringVarP(&eventsHost, "events", "e", "localhost:3000", "Events SSE endpoint")
 	watchCmd.PersistentFlags().StringVarP(&storyPath, "story", "s", "", "Log backend story to a log path")
-
 }
 
 var watchCmd = &cobra.Command{
@@ -41,9 +42,24 @@ var watchCmd = &cobra.Command{
 }
 
 func watch(cmd *cobra.Command, args []string) error {
-	stops := []func(){}
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
+
+	stops := []func(){}
+
+	// logrus hook for sentry, if DSN is provided
+	dsn := os.Getenv("SENTRY_DSN")
+	if dsn != "" {
+		sentryHook, err := sentry.NewHook(sentry.Options{
+			Dsn: dsn,
+		}, log.PanicLevel, log.FatalLevel, log.ErrorLevel)
+		if err != nil {
+			return err
+		}
+		sentryHook.AddTag("version", version.Version())
+		sentryHook.AddTag("program", "sidecar")
+		log.AddHook(sentryHook)
+	}
 
 	docker, err := client.NewEnvClient()
 	if err != nil {

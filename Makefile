@@ -1,5 +1,9 @@
+GIT_VERSION?=$(shell git describe --tags --always --abbrev=42 --dirty)
+
 build: bin
-	go build -o bin/sidecar .
+	go build -o bin/sidecar  \
+		-ldflags "-X github.com/factorysh/traefik-sidecar/version.version=$(GIT_VERSION)" \
+		.
 
 bin:
 	mkdir -p bin

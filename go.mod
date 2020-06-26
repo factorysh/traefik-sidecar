@@ -7,6 +7,7 @@ require (
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/factorysh/docker-visitor v0.1.5
 	github.com/factorysh/pubsub v0.3.0
+	github.com/getsentry/sentry-go v0.6.1 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/onrik/logrus v0.6.0

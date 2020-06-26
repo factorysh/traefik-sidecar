@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/docker/docker/client"
 	"github.com/factorysh/docker-visitor/visitor"
@@ -38,12 +41,17 @@ var watchCmd = &cobra.Command{
 }
 
 func watch(cmd *cobra.Command, args []string) error {
+	stops := []func(){}
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		return err
 	}
 	w := visitor.New(docker)
 	ctx, cancel := context.WithCancel(context.Background())
+	stops = append(stops, cancel)
 	defer cancel()
 	go func() {
 		err := w.Start(ctx)
@@ -62,6 +70,7 @@ func watch(cmd *cobra.Command, args []string) error {
 		s := story.New(c.Events, storyPath)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
+		stops = append(stops, cancel)
 		go func() {
 			err := s.Listen(ctx)
 			if err != nil {
@@ -76,6 +85,18 @@ func watch(cmd *cobra.Command, args []string) error {
 	go c.WatchBackends()
 	log.Info("watch traefik's backends")
 	log.Info("Listening HTTP")
+
+	go func() {
+		for {
+			s := <-signals
+			log.WithField("signal", s).Info()
+			for _, stop := range stops {
+				stop()
+			}
+			time.Sleep(50 * time.Millisecond)
+			os.Exit(1)
+		}
+	}()
 	err = http.ListenAndServe(eventsHost, mux)
 	if err != nil {
 		log.WithError(err).Error()

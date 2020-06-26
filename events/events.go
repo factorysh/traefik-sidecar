@@ -14,9 +14,12 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	jsonpatch "github.com/evanphx/json-patch"
+	_projects "github.com/factorysh/traefik-sidecar/projects"
+	"github.com/factorysh/traefik-sidecar/traefik"
 	"github.com/yazgazan/jaydiff/diff"
 )
 
+// Client for traefik API
 type Client struct {
 	req          *http.Request
 	address      string
@@ -24,25 +27,26 @@ type Client struct {
 	Events       *event.Events
 	currentState []byte
 	lock         sync.WaitGroup
+	projects     *_projects.Projects
 }
 
-func New(address, username, password string) (*Client, error) {
+// New Client
+func New(address, username, password string, projects *_projects.Projects) (*Client, error) {
 	req, err := http.NewRequest("GET", address, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.SetBasicAuth(username, password)
 	c := &Client{
-		address: address,
-		req:     req,
-		client:  &http.Client{},
-		Events:  event.NewEvents(),
+		address:  address,
+		req:      req,
+		client:   &http.Client{},
+		Events:   event.NewEvents(),
+		projects: projects,
 	}
 	c.lock.Add(1)
 	c.Events.SetPrems(func(ctx context.Context) *event.Event {
-		fmt.Println("waiting")
 		c.lock.Wait()
-		fmt.Println("prems")
 		return &event.Event{
 			Id:    "0",
 			Data:  string(c.currentState),
@@ -52,10 +56,14 @@ func New(address, username, password string) (*Client, error) {
 	return c, nil
 }
 
+// Wait for getting initial traefik state
 func (c *Client) Wait() {
 	c.lock.Wait()
 }
 
+// WatchBackends watch traefik's backends
+// It's polling : forever loop + wait
+// Events are diff between current and last state.
 func (c *Client) WatchBackends() {
 	table := crc64.MakeTable(42)
 	c.req.URL.Path = "/api/providers/docker/backends"
@@ -75,8 +83,22 @@ func (c *Client) WatchBackends() {
 		}
 		ck := crc64.Checksum(bodyText, table)
 		if len(c.currentState) == 0 {
-			fmt.Println("prems")
-			fmt.Println(string(bodyText))
+			var current traefik.Backends
+			err = json.Unmarshal(bodyText, &current)
+			if err != nil {
+				log.Error(err)
+			}
+			l := log.WithField("ck", ck)
+			for name, backend := range current {
+				p, err := c.projects.Project(backend)
+				if err != nil {
+					log.Error(err)
+				} else {
+					l = l.WithField(name, p)
+					log.Info("Server ", name, "project", p)
+				}
+			}
+			l.Info("Initial state")
 			c.currentState = bodyText
 			c.lock.Done()
 		} else {
@@ -108,6 +130,6 @@ func (c *Client) WatchBackends() {
 			}
 		}
 		ckOld = ck
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }

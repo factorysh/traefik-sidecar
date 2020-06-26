@@ -16,12 +16,14 @@ import (
 var (
 	traefikHost     string
 	traefikPassword string
+	eventsHost      string
 )
 
 func init() {
 	rootCmd.AddCommand(watchCmd)
 	watchCmd.PersistentFlags().StringVarP(&traefikHost, "traefik", "t", "http://localhost:8080", "Træfik admin url")
-	watchCmd.PersistentFlags().StringVarP(&traefikPassword, "password", "", "", "Træfik admin password")
+	watchCmd.PersistentFlags().StringVarP(&traefikPassword, "password", "p", "", "Træfik admin password")
+	watchCmd.PersistentFlags().StringVarP(&eventsHost, "events", "e", "localhost:3000", "Events SSE endpoint")
 }
 
 var watchCmd = &cobra.Command{
@@ -57,7 +59,7 @@ func watch(cmd *cobra.Command, args []string) error {
 	go c.WatchBackends()
 	log.Info("watch traefik's backends")
 	log.Info("Listening HTTP")
-	err = http.ListenAndServe(":3000", mux)
+	err = http.ListenAndServe(eventsHost, mux)
 	if err != nil {
 		log.WithError(err).Error()
 	}

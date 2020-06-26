@@ -10,7 +10,7 @@ import (
 
 func TestDiff(t *testing.T) {
 	var b1, b2 Backends
-	json.Unmarshal([]byte(`
+	err := json.Unmarshal([]byte(`
 {
 	"backend-factory-octoback-octoback": {
 		"loadBalancer": {"method":"wrr"},
@@ -23,7 +23,8 @@ func TestDiff(t *testing.T) {
 	}
 }
 	`), &b1)
-	json.Unmarshal([]byte(`
+	assert.NoError(t, err)
+	err = json.Unmarshal([]byte(`
 {
 	"backend-factory-octoback-octoback": {
 		"loadBalancer": {"method":"wrr"},
@@ -44,6 +45,7 @@ func TestDiff(t *testing.T) {
 	}
 }
 	`), &b2)
+	assert.NoError(t, err)
 	b := Diff(b1, b2)
 	fmt.Println(b)
 	assert.Len(t, b, 1)

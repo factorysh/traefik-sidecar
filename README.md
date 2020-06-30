@@ -6,7 +6,7 @@ Watch traefik admin API, avec exposes a flow of state + patches.
 * [x] Sentry
 * [ ] Prometheus endpoint
 * [ ] Setting for log verbosity
-* [ ] HTTP splash page
+* [x] HTTP splash page
 
 Licence
 -------

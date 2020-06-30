@@ -97,6 +97,7 @@ func watch(cmd *cobra.Command, args []string) error {
 
 	mux := http.NewServeMux()
 	ctx2 := context.Background()
+	mux.HandleFunc("/", web.Home)
 	mux.Handle("/events", web.New(ctx2, c.Events))
 	go c.WatchBackends()
 	log.Info("watch traefik's backends")

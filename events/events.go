@@ -64,7 +64,7 @@ func (c *Client) Wait() {
 // WatchBackends watch traefik's backends
 // It's polling : forever loop + wait
 // Events are diff between current and last state.
-func (c *Client) WatchBackends() {
+func (c *Client) WatchBackends() error {
 	table := crc64.MakeTable(42)
 	c.req.URL.Path = "/api/providers/docker/backends"
 	var ckOld uint64
@@ -73,6 +73,16 @@ func (c *Client) WatchBackends() {
 		resp, err := c.client.Do(c.req)
 		if err != nil {
 			log.Error(err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusBadRequest {
+			// Blocking error
+			return fmt.Errorf("Traefik deadly error : %s", resp.Status)
+		}
+		if resp.StatusCode != http.StatusOK {
+			// Not blocking error
+			log.WithField("status", resp.StatusCode).Error()
 			time.Sleep(5 * time.Second)
 			continue
 		}

@@ -104,7 +104,14 @@ func watch(cmd *cobra.Command, args []string) error {
 	mux.HandleFunc("/", web.Home)
 	mux.Handle("/events", web.New(ctx2, c.Events))
 	mux.Handle("/metrics", promhttp.Handler())
-	go c.WatchBackends()
+	go func() {
+		err := c.WatchBackends()
+		if err != nil {
+			log.WithError(err).Error()
+			// traefik is broken, lets stop
+			signals <- os.Interrupt
+		}
+	}()
 	log.Info("watch traefik's backends")
 	log.Info("Listening HTTP")
 

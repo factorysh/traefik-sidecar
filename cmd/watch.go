@@ -15,6 +15,7 @@ import (
 	"github.com/factorysh/traefik-sidecar/version"
 	"github.com/factorysh/traefik-sidecar/web"
 	"github.com/onrik/logrus/sentry"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -82,23 +83,27 @@ func watch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	var s *story.Story
 	if storyPath != "" {
-		s := story.New(c.Events, storyPath)
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		stops = append(stops, cancel)
-		go func() {
-			err := s.Listen(ctx)
-			if err != nil {
-				log.WithError(err).Error()
-			}
-		}()
+		s = story.NewStoryWithPath(c.Events, storyPath)
+	} else {
+		s = story.New(c.Events)
 	}
+	ctx3, cancel3 := context.WithCancel(context.Background())
+	defer cancel()
+	stops = append(stops, cancel3)
+	go func() {
+		err := s.Listen(ctx3)
+		if err != nil {
+			log.WithError(err).Error()
+		}
+	}()
 
 	mux := http.NewServeMux()
 	ctx2 := context.Background()
 	mux.HandleFunc("/", web.Home)
 	mux.Handle("/events", web.New(ctx2, c.Events))
+	mux.Handle("/metrics", promhttp.Handler())
 	go c.WatchBackends()
 	log.Info("watch traefik's backends")
 	log.Info("Listening HTTP")

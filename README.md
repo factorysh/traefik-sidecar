@@ -4,7 +4,7 @@ Traefik Sidecar
 Watch traefik admin API, avec exposes a flow of state + patches.
 
 * [x] Sentry
-* [ ] Prometheus endpoint
+* [x] Prometheus endpoint
 * [ ] Setting for log verbosity
 * [x] HTTP splash page
 

@@ -6,7 +6,7 @@ require (
 	github.com/docker/docker v1.13.1
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/factorysh/docker-visitor v0.1.6
-	github.com/factorysh/pubsub v0.3.0
+	github.com/factorysh/pubsub v0.4.0
 	github.com/getsentry/sentry-go v0.6.1 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/onrik/logrus v0.6.0

@@ -51,18 +51,23 @@ func (s *Story) Listen(ctx context.Context) error {
 				log.WithError(err).WithField("evt", evt).Error()
 				continue
 			}
-			for k, v := range events {
-				var action string
-				if v == nil {
-					action = "stop"
-					metrics.BackendDeath.Inc()
-				} else {
-					action = "start"
-					metrics.BackendBirth.Inc()
+			switch evt.Event {
+			case "traefik.patch":
+				for k, v := range events {
+					var action string
+					if v == nil {
+						action = "stop"
+						metrics.BackendDeath.Inc()
+					} else {
+						action = "start"
+						metrics.BackendBirth.Inc()
+					}
+					if s.logger != nil {
+						s.logger.WithField("backend", k).Info(action)
+					}
 				}
-				if s.logger != nil {
-					s.logger.WithField("backend", k).Info(action)
-				}
+			case "docker":
+				s.logger.WithField("container", events["name"]).Info(events["action"])
 			}
 		case <-ctx.Done():
 			return nil

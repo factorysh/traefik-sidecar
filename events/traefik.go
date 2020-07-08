@@ -72,7 +72,6 @@ func (c *Client) WatchBackends() error {
 	table := crc64.MakeTable(42)
 	c.req.URL.Path = "/api/providers/docker/backends"
 	var ckOld uint64
-	var id int64
 	for {
 		resp, err := c.client.Do(c.req)
 		if err != nil {
@@ -133,11 +132,10 @@ func (c *Client) WatchBackends() error {
 				if err != nil {
 					log.Error(err)
 				} else {
-					id++
 					c.Events.Append(&event.Event{
 						Data:  string(patch),
-						Id:    string(id),
-						Event: "patch",
+						Id:    c.Events.NextEventId(),
+						Event: "traefik.patch",
 					})
 				}
 				c.currentState = bodyText

@@ -83,6 +83,8 @@ func watch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	events.WatchForTraefikContainer(w, c.Events)
+
 	var s *story.Story
 	if storyPath != "" {
 		s = story.NewStoryWithPath(c.Events, storyPath)

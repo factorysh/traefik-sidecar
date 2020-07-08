@@ -28,6 +28,8 @@ type Client struct {
 	currentState []byte
 	lock         sync.WaitGroup
 	projects     *_projects.Projects
+	errorWait    time.Duration
+	pollWait     time.Duration
 }
 
 // New Client
@@ -38,11 +40,13 @@ func New(address, username, password string, projects *_projects.Projects) (*Cli
 	}
 	req.SetBasicAuth(username, password)
 	c := &Client{
-		address:  address,
-		req:      req,
-		client:   &http.Client{},
-		Events:   event.NewEvents(),
-		projects: projects,
+		address:   address,
+		req:       req,
+		client:    &http.Client{},
+		Events:    event.NewEvents(),
+		projects:  projects,
+		errorWait: 5 * time.Second,
+		pollWait:  time.Second,
 	}
 	c.lock.Add(1)
 	c.Events.SetPrems(func(ctx context.Context) *event.Event {
@@ -73,7 +77,7 @@ func (c *Client) WatchBackends() error {
 		resp, err := c.client.Do(c.req)
 		if err != nil {
 			log.Error(err)
-			time.Sleep(5 * time.Second)
+			time.Sleep(c.errorWait)
 			continue
 		}
 		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusBadRequest {
@@ -83,7 +87,7 @@ func (c *Client) WatchBackends() error {
 		if resp.StatusCode != http.StatusOK {
 			// Not blocking error
 			log.WithField("status", resp.StatusCode).Error()
-			time.Sleep(5 * time.Second)
+			time.Sleep(c.errorWait)
 			continue
 		}
 		bodyText, err := ioutil.ReadAll(resp.Body)
@@ -140,6 +144,6 @@ func (c *Client) WatchBackends() error {
 			}
 		}
 		ckOld = ck
-		time.Sleep(2 * time.Second)
+		time.Sleep(c.pollWait)
 	}
 }

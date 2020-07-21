@@ -189,6 +189,8 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/onrik/logrus v0.6.0 h1:KUr2DYeMDMhTl+Gxq04tvFgkFYEKvP5051NihIHDWCs=
 github.com/onrik/logrus v0.6.0/go.mod h1:qfe9NeZVAJfIxviw3cYkZo3kvBtLoPRJriAO8zl7qTk=
+github.com/onrik/logrus v0.7.0 h1:Zw7pup8/kzvYVAazuAg1jI+w7p+b3cl7DGbhwDHRz7M=
+github.com/onrik/logrus v0.7.0/go.mod h1:qfe9NeZVAJfIxviw3cYkZo3kvBtLoPRJriAO8zl7qTk=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.3/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=

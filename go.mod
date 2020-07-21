@@ -9,7 +9,7 @@ require (
 	github.com/factorysh/pubsub v0.4.0
 	github.com/getsentry/sentry-go v0.6.1 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/onrik/logrus v0.6.0
+	github.com/onrik/logrus v0.7.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0

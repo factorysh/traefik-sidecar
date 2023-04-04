@@ -3,7 +3,7 @@ module github.com/factorysh/traefik-sidecar
 go 1.16
 
 require (
-	github.com/docker/docker v20.10.12+incompatible
+	github.com/docker/docker v20.10.24+incompatible
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/factorysh/docker-visitor v1.7.5
 	github.com/factorysh/pubsub v0.4.0
